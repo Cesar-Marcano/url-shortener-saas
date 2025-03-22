@@ -19,14 +19,14 @@ enum AccountStatus {
 }
 
 model Currency {
-  id              Int               @id @default(autoincrement())
-  code            String            @unique
-  name            String
-  symbol          String
-  SuscriptionTier SuscriptionTier[]
+  id               Int                @id @default(autoincrement())
+  code             String             @unique
+  name             String
+  symbol           String
+  SubscriptionTier SubscriptionTier[]
 }
 
-model SuscriptionTier {
+model SubscriptionTier {
   id                  Int                   @id @default(autoincrement())
   name                String                @unique
   description         String?
@@ -37,6 +37,8 @@ model SuscriptionTier {
   price               Float                 @default(0)
   currencyId          Int
   currency            Currency              @relation(fields: [currencyId], references: [id])
+  enabled             Boolean               @default(true)
+  public              Boolean               @default(true)
   createdAt           DateTime              @default(now())
   User                User[]
   SubscriptionHistory SubscriptionHistory[]
@@ -45,24 +47,45 @@ model SuscriptionTier {
   @@index([name])
 }
 
+model PaymentMode {
+  id   Int    @id @default(autoincrement())
+  code String @default("MONTHLY")
+  User User[]
+}
+
+model Session {
+  id           Int     @id @default(autoincrement())
+  sessionUUID  String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  deviceUUID   String
+  userAgent    String?
+  userIpAdress String?
+  user         User    @relation(fields: [userId], references: [id])
+  userId       Int
+}
+
 model User {
-  id            Int           @id @default(autoincrement())
-  email         String        @unique
-  password      String        @unique
-  username      String?
-  name          String?
-  bio           String?
-  profilePic    String?
-  role          UserRole      @default(USER)
-  accountStatus AccountStatus @default(ENABLED)
-  disabledUntil DateTime?
-  createdAt     DateTime      @default(now())
+  id                   Int           @id @default(autoincrement())
+  email                String        @unique
+  password             String
+  username             String?       @unique
+  name                 String?
+  bio                  String?
+  profilePic           String?
+  emailVerified        Boolean       @default(false)
+  twoFactorAuthEnabled Boolean       @default(true)
+  role                 UserRole      @default(USER)
+  accountStatus        AccountStatus @default(ENABLED)
+  disabledUntil        DateTime?
+  paymentMode          PaymentMode   @relation(fields: [paymentModeId], references: [id])
+  createdAt            DateTime      @default(now())
 
   ShortenedUrl        ShortenedUrl[]        @relation("UserShortenedUrls")
   tierId              Int
-  tier                SuscriptionTier       @relation(fields: [tierId], references: [id])
+  tier                SubscriptionTier      @relation(fields: [tierId], references: [id])
   ClickHistory        ClickHistory[]
   SubscriptionHistory SubscriptionHistory[]
+  paymentModeId       Int
+  Session             Session[]
 
   @@index([email])
   @@index([username])
@@ -74,6 +97,7 @@ model ShortenedUrl {
   slug        String    @unique
   originalUrl String
   enabled     Boolean   @default(true)
+  archived    Boolean   @default(false)
   createdAt   DateTime  @default(now())
   expiresAt   DateTime?
 
@@ -82,8 +106,12 @@ model ShortenedUrl {
   ClickHistory ClickHistory[]
 
   @@index([slug])
+  @@index([slug, originalUrl])
   @@index([originalUrl])
   @@index([enabled])
+  @@index([archived])
+  @@index([enabled, archived])
+  @@index([expiresAt])
 }
 
 model ClickHistory {
@@ -95,18 +123,17 @@ model ClickHistory {
   shortenedUrl   ShortenedUrl @relation(fields: [shortenedUrlId], references: [id])
 
   @@index([shortenedUrlId])
-  @@index([userId])
 }
 
 model SubscriptionHistory {
-  id        Int             @id @default(autoincrement())
+  id        Int              @id @default(autoincrement())
   userId    Int
   tierId    Int
-  startDate DateTime        @default(now())
+  startDate DateTime         @default(now())
   endDate   DateTime?
-  tier      SuscriptionTier @relation(fields: [tierId], references: [id])
-  user      User            @relation(fields: [userId], references: [id])
+  tier      SubscriptionTier @relation(fields: [tierId], references: [id])
+  user      User             @relation(fields: [userId], references: [id])
 
   @@index([userId])
-  @@index([tierId])
+  @@index([userId, tierId])
 }
