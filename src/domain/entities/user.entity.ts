@@ -1,5 +1,4 @@
 import { $Enums, User } from '@prisma/client'
-import { PasswordHasher } from '../../shared/utils/passwordHasher'
 
 export class UserEntity implements User {
   constructor(
@@ -21,13 +20,11 @@ export class UserEntity implements User {
   ) {}
 
   static async create(email: string, password: string): Promise<UserEntity> {
-    const hashedPassword = await PasswordHasher.hashPassword(password)
-
     return new UserEntity(
       null,
       0,
       email,
-      hashedPassword,
+      password,
       null,
       null,
       null,
