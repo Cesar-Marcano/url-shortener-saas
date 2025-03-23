@@ -1,4 +1,4 @@
-import { ParseStrategy } from '../../types/parseStrategy.type'
+import { ParseStrategy } from '../types/parseStrategy.type'
 
 export class StringParseStrategy implements ParseStrategy<string> {
   parse(value: string): string {

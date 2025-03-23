@@ -1,16 +1,12 @@
-import dotenv from 'dotenv'
+import './infrastructure/config/env.config'
 
-dotenv.config()
+import { config } from './infrastructure/config/main.config'
+import { app } from './infrastructure/server/app'
 
-import express from 'express'
-import { config } from './config'
+async function bootstrap() {
+  app.listen(config.port, () => {
+    console.log(`Server listening on port ${config.port}`)
+  })
+}
 
-const app = express()
-
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
-app.listen(config.port, () => {
-  console.log(`Server is running on http://localhost:${config.port}`)
-})
+void bootstrap()
