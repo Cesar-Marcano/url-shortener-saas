@@ -19,7 +19,7 @@ export class UserEntity implements User {
     public paymentModeId: number,
   ) {}
 
-  static async create(email: string, password: string): Promise<UserEntity> {
+  static create(email: string, password: string): UserEntity {
     return new UserEntity(
       null,
       0,
@@ -36,6 +36,31 @@ export class UserEntity implements User {
       new Date(),
       1,
       1,
+    )
+  }
+
+  toPublicEntity(): Omit<UserEntity, 'password'> {
+    const { password, ...publicEntity } = this
+    return publicEntity as Omit<UserEntity, 'password'>
+  }
+
+  static fromPrisma(user: User): UserEntity {
+    return new UserEntity(
+      user.name,
+      user.id,
+      user.email,
+      user.password,
+      user.username,
+      user.bio,
+      user.profilePic,
+      user.emailVerified,
+      user.twoFactorAuthEnabled,
+      user.role,
+      user.accountStatus,
+      user.disabledUntil,
+      user.createdAt,
+      user.tierId,
+      user.paymentModeId,
     )
   }
 }
