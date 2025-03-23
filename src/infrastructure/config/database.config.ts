@@ -1,3 +1,13 @@
 import { PrismaClient } from '@prisma/client'
 
-export const db = new PrismaClient()
+export class DatabaseConfig {
+  private prismaClient: PrismaClient
+
+  constructor() {
+    this.prismaClient = new PrismaClient()
+  }
+
+  public getClient(): PrismaClient {
+    return this.prismaClient
+  }
+}
