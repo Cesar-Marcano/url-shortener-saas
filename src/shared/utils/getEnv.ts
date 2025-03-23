@@ -1,8 +1,5 @@
 import { ParseStrategy } from '../types/parseStrategy.type'
-import { BooleanParseStrategy } from '../parsers/boolean.parser'
-import { DefaultParseStrategy } from '../parsers/default.parser'
-import { NumberParseStrategy } from '../parsers/number.parser'
-import { StringParseStrategy } from '../parsers/string.parser'
+import { parseStrategyRegistry } from '../strategy-registries/parseStrategy.registry'
 
 export function getEnv<T>(key: string, defaultValue?: T): T | null {
   const value = process.env[key]
@@ -11,17 +8,12 @@ export function getEnv<T>(key: string, defaultValue?: T): T | null {
     return defaultValue ?? null
   }
 
-  let strategy: ParseStrategy<T>
+  const strategyType = typeof defaultValue as keyof typeof parseStrategyRegistry
 
-  if (typeof defaultValue === 'boolean') {
-    strategy = new BooleanParseStrategy() as ParseStrategy<T>
-  } else if (typeof defaultValue === 'number') {
-    strategy = new NumberParseStrategy() as ParseStrategy<T>
-  } else if (typeof defaultValue === 'string') {
-    strategy = new StringParseStrategy() as ParseStrategy<T>
-  } else {
-    strategy = new DefaultParseStrategy<T>() as ParseStrategy<T>
-  }
+  const StrategyClass =
+    parseStrategyRegistry[strategyType] || parseStrategyRegistry['default']
+
+  const strategy: ParseStrategy<T> = new StrategyClass() as ParseStrategy<T>
 
   return strategy.parse(value)
 }
