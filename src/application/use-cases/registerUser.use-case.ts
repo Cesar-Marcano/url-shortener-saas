@@ -1,6 +1,6 @@
 import { UserEntity } from '../../domain/entities/user.entity'
 import { IUserRepository } from '../../domain/repositories/user.repository'
-import { PasswordHasher } from '../../infrastructure/services/passwordHasher'
+import { IPasswordHasher } from '../../infrastructure/interfaces/passwordHasher.interface'
 import { UseCase } from '../interfaces/useCase.interface'
 
 interface Request {
@@ -13,7 +13,7 @@ type Response = Omit<UserEntity, 'password'>
 export class RegisterUserUseCase implements UseCase<Request, Response> {
   constructor(
     private readonly userRepository: IUserRepository,
-    private readonly passwordHasher: PasswordHasher,
+    private readonly passwordHasher: IPasswordHasher,
   ) {}
 
   public async execute(request: Request) {
